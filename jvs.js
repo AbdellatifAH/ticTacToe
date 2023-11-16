@@ -66,6 +66,10 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
         }
     ];
 
+    const changePlayerName = (playerIndex, newName) => {
+        players[playerIndex].name = newName;
+    }
+
     let activePlayer = players[0];
 
     const switchPlayerTurn = () => {
@@ -138,18 +142,24 @@ function GameController(playerOneName = "Player One", playerTwoName = "Player Tw
     return {
         playRound,
         getActivePlayer,
+        changePlayerName,
         getBoard: board.getBoard
     };
 }
 
 function ScreenController() {
     const game = GameController();
-    const playerTunDiv = document.querySelector(".turn");
+    const playerTurnDiv = document.querySelector(".turn");
     const resultDiv = document.querySelector(".result")
     const boardDiv = document.querySelector(".board");
+    const p1NameBtn = document.querySelector(".p1Name");
+    const p2NameBtn = document.querySelector(".p2Name");
 
     const changeResultDiv = (result) => {
         resultDiv.textContent = result;
+    }
+    const changeturnDiv = (a = '') => {
+        playerTurnDiv.textContent = a;
     }
 
     const updateScreen = () => {
@@ -157,7 +167,7 @@ function ScreenController() {
         const board = game.getBoard();
         const activePlayer = game.getActivePlayer();
 
-        playerTunDiv.textContent = `${activePlayer.name}'s turn...`;
+        changeturnDiv(`${activePlayer.name}'s turn...`)
 
         board.forEach((row, indexR) => {
             row.forEach((cell, indexC) => {
@@ -166,8 +176,6 @@ function ScreenController() {
                 cellButton.dataset.rowIndex = indexR
                 cellButton.dataset.columnIndex = indexC
                 cellButton.textContent = cell.getValue();
-                // if (cellButton.textContent == 0)
-                //     cellButton.addEventListener("click", clickHandlerBoard)
                 boardDiv.appendChild(cellButton);
             })
         })
@@ -178,14 +186,31 @@ function ScreenController() {
         const gameResult = game.playRound(indexR, indexC);
         if (!indexC || !indexR) return;
         if (gameResult == "win") {
-            boardDiv.removeEventListener("click", clickHandlerBoard)
-            changeResultDiv(`${game.getActivePlayer().name} is the WINNER!!`)
+            updateScreen();
+            boardDiv.removeEventListener("click", clickHandlerBoard);
+            changeResultDiv(`${game.getActivePlayer().name} is the WINNER!!`);
+            changeturnDiv();
+            return
         }
-        else if (gameResult == "draw")
+        else if (gameResult == "draw") {
+            updateScreen();
+            changeturnDiv();
             changeResultDiv("No Winner, it's a DRAW!!!")
+            return
+        }
         updateScreen();
+
     }
+
     boardDiv.addEventListener("click", clickHandlerBoard);
+    p1NameBtn.addEventListener("click", () => {
+        game.changePlayerName(0, prompt("Enter player's One Name"));
+        updateScreen();
+    })
+    p2NameBtn.addEventListener("click", () => {
+        game.changePlayerName(1, prompt("Enter player's Two Name"));
+        updateScreen();
+    })
 
     updateScreen();
 }
